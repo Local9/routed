@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
-[System.Serializable]
+
+[Serializable]
 public class Node
 {
-    public string NodeName;
-    public DateTime NodeUpdateTime;
-    public List<string> NodeSigList;
+    public string Name;
+    public DateTime Update;
+    public List<string> SigList;
+
     public Node(string name)
     {
-        NodeName = name;
-        NodeUpdateTime = DateTime.Now;
-        NodeSigList = new List<string>();
+        Name = name;
+        Update = DateTime.Now;
+        SigList = new List<string>();
     }
 }

@@ -30,10 +30,10 @@ public class NodeFrame : MonoBehaviour
     {
         foreach (Node node in gameManager.WorkingRoute.NodeList)
         {
-            if (node.NodeName == Name)
+            if (node.Name == Name)
             {
-                node.NodeSigList.Clear();
-                node.NodeUpdateTime = DateTime.Now;
+                node.SigList.Clear();
+                node.Update = DateTime.Now;
                 Serializer.SaveData(gameManager.WorkingRoute);
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
                 return;
@@ -50,28 +50,28 @@ public class NodeFrame : MonoBehaviour
         if (NewStrings[0][3] != '-') return;
         foreach (Node node in GameObject.Find("GameManager").GetComponent<GameManager>().WorkingRoute.NodeList)
         {
-            if (node.NodeName == Name)
+            if (node.Name == Name)
             {
                 Debug.Log("node name match");
                 // Compare old sigs to new, update old list
                 for (var i = 0; i < NewStrings.Count; i ++)
                 {
-                    for (var j = 0; j < node.NodeSigList.Count; j ++)
+                    for (var j = 0; j < node.SigList.Count; j ++)
                     {
-                        if (NewStrings[i].Substring(0, 7) == node.NodeSigList[j].Substring(0, 7))
+                        if (NewStrings[i].Substring(0, 7) == node.SigList[j].Substring(0, 7))
                         {
                             Debug.Log("existing sig found");
-                            if (NewStrings[i].Length < node.NodeSigList[j].Length)
+                            if (NewStrings[i].Length < node.SigList[j].Length)
                             {
                                 Debug.Log("replacing new sig with further progressed old sig");
-                                NewStrings[i] = node.NodeSigList[j];
+                                NewStrings[i] = node.SigList[j];
                             }
                         }
                     }
                 }
                 Debug.Log("updated sigs");
-                node.NodeSigList = NewStrings;
-                node.NodeUpdateTime = DateTime.Now;
+                node.SigList = NewStrings;
+                node.Update = DateTime.Now;
                 gameManager.WorkingRoute.CameraY = transform.position.y;
                 var camPos = Camera.main.transform.position;
                 Camera.main.transform.position = new Vector3(camPos.x, transform.position.y, camPos.z);
@@ -88,9 +88,9 @@ public class NodeFrame : MonoBehaviour
         var nodeList = GameObject.Find("GameManager").GetComponent<GameManager>().WorkingRoute.NodeList;
         foreach (Node node in nodeList)
         {
-            if (nodeName == node.NodeName)
+            if (nodeName == node.Name)
             {
-                strings = node.NodeSigList;
+                strings = node.SigList;
             }
         }
 

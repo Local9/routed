@@ -38,10 +38,10 @@ public class GameManager : MonoBehaviour
             {
                 var pos = new Vector2(0f, -i * RowSize);
                 var frame = Instantiate(NodePrefab, pos, Quaternion.identity);
-                frame.GetComponent<NodeFrame>().Name = WorkingRoute.NodeList[i].NodeName;
-                frame.GetComponent<NodeFrame>().Time = WorkingRoute.NodeList[i].NodeUpdateTime;
+                frame.GetComponent<NodeFrame>().Name = WorkingRoute.NodeList[i].Name;
+                frame.GetComponent<NodeFrame>().Time = WorkingRoute.NodeList[i].Update;
                 
-                var secStatus = FetchSystemSecurity(WorkingRoute.NodeList[i].NodeName);
+                var secStatus = FetchSystemSecurity(WorkingRoute.NodeList[i].Name);
                 var newCol = new Color();
                 if (secStatus >= 0.75f)
                 {
@@ -59,7 +59,7 @@ public class GameManager : MonoBehaviour
 
                 RowCount++;
                 nodesManaged++;
-                stringsManaged += WorkingRoute.NodeList[i].NodeSigList.Count;
+                stringsManaged += WorkingRoute.NodeList[i].SigList.Count;
             }
             Debug.Log("loading camera x: " + WorkingRoute.CameraY);
             Camera.main.transform.position += new Vector3(0f, WorkingRoute.CameraY);
