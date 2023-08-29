@@ -1,10 +1,8 @@
+using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.IO;
-using System;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using TMPro;
+
 public class GameManager : MonoBehaviour
 {
     public TextAsset securityCSV;
@@ -26,7 +24,7 @@ public class GameManager : MonoBehaviour
     {
         var csv = securityCSV.ToString();
         securityString = csv.Split(',');
-        Debug.Log("There are "+securityString.Length+" lines loaded into the security string array.");
+        Debug.Log("There are " + securityString.Length + " lines loaded into the security string array.");
 
         var nodesManaged = 0;
         var stringsManaged = 0;
@@ -34,13 +32,13 @@ public class GameManager : MonoBehaviour
         if (File.Exists(Serializer.SavePath))
         {
             WorkingRoute = Serializer.ReadData(WorkingRoute);
-            for (var i = 0; i < WorkingRoute.NodeList.Count; i ++)
+            for (var i = 0; i < WorkingRoute.NodeList.Count; i++)
             {
                 var pos = new Vector2(0f, -i * RowSize);
                 var frame = Instantiate(NodePrefab, pos, Quaternion.identity);
                 frame.GetComponent<NodeFrame>().Name = WorkingRoute.NodeList[i].Name;
                 frame.GetComponent<NodeFrame>().Time = WorkingRoute.NodeList[i].Update;
-                
+
                 var secStatus = FetchSystemSecurity(WorkingRoute.NodeList[i].Name);
                 var newCol = new Color();
                 if (secStatus >= 0.75f)
@@ -115,20 +113,20 @@ public class GameManager : MonoBehaviour
     float FetchSystemSecurity(string systemName)
     {
         var fetchedSecurity = 1f;
-        Debug.Log("Searching for security status for system name: "+systemName);
-        for (var i = 0; i < securityString.Length; i ++)
+        Debug.Log("Searching for security status for system name: " + systemName);
+        for (var i = 0; i < securityString.Length; i++)
         {
             if (securityString[i] == systemName)
             {
-                Debug.Log("Found name match: "+systemName+" + "+securityString[i]+" (security: "+securityString[i + 1]+")");
+                Debug.Log("Found name match: " + systemName + " + " + securityString[i] + " (security: " + securityString[i + 1] + ")");
                 fetchedSecurity = float.Parse(securityString[i + 1]);
                 break;
             }
         }
         // Round to nearest tenth
         fetchedSecurity = Mathf.Round(fetchedSecurity * 10.0f) * 0.1f;
-        Debug.Log("Security for "+systemName+": "+fetchedSecurity);
-        return(fetchedSecurity);
+        Debug.Log("Security for " + systemName + ": " + fetchedSecurity);
+        return (fetchedSecurity);
     }
     void ImportRouteAlgorithm()
     {
@@ -139,7 +137,7 @@ public class GameManager : MonoBehaviour
 
         // Trim "Current location: " from clipboard
         var terminationTrim = 0;
-        for (var i = 0; i < clipBoard.Length; i ++)
+        for (var i = 0; i < clipBoard.Length; i++)
         {
             if (clipBoard[i] == '1')
             {
@@ -152,10 +150,10 @@ public class GameManager : MonoBehaviour
         // Parse each solar system into a working list
         var parsedList = clipBoard.Split('\n');
         var terminationCharacterLength = 0;
-        for (var i = 0; i < parsedList.Length; i ++)
+        for (var i = 0; i < parsedList.Length; i++)
         {
             // Search string for subsequent parenthesis
-            for (var j = 0; j < parsedList[i].Length; j ++)
+            for (var j = 0; j < parsedList[i].Length; j++)
             {
                 if (parsedList[i][j] == '(')
                 {
@@ -168,7 +166,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Create new nodes and add them to working route
-        for (var i = 0; i < parsedList.Length; i ++)
+        for (var i = 0; i < parsedList.Length; i++)
         {
             Node newNode = new Node(parsedList[i]);
             WorkingRoute.NodeList.Add(newNode);
@@ -209,7 +207,7 @@ public class GameManager : MonoBehaviour
     }
     void DragCamera()
     {
-        var newLoc = new Vector3(0f, (mouseDragStartPoint.y - Input.mousePosition.y) / 100,0f);
+        var newLoc = new Vector3(0f, (mouseDragStartPoint.y - Input.mousePosition.y) / 100, 0f);
         Camera.main.transform.position = cameraDragStartPoint + newLoc;
     }
     void FinishCameraDrag()

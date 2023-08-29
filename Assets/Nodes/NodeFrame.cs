@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class NodeFrame : MonoBehaviour
@@ -54,9 +52,9 @@ public class NodeFrame : MonoBehaviour
             {
                 Debug.Log("node name match");
                 // Compare old sigs to new, update old list
-                for (var i = 0; i < NewStrings.Count; i ++)
+                for (var i = 0; i < NewStrings.Count; i++)
                 {
-                    for (var j = 0; j < node.SigList.Count; j ++)
+                    for (var j = 0; j < node.SigList.Count; j++)
                     {
                         if (NewStrings[i].Substring(0, 7) == node.SigList[j].Substring(0, 7))
                         {
@@ -116,35 +114,36 @@ public class NodeFrame : MonoBehaviour
             else if (sig.Contains("Combat Site")) displayString += "";
             else displayString += "— ???";
             displayString += "\n";*/
-            total ++;
-            if (sig.Contains("Covert Research")) 
+            total++;
+            if (sig.Contains("Covert Research"))
             {
                 tempString += sig.Substring(0, 3) + " [GS], ";
-                targets ++; solved ++;
+                targets++; solved++;
             }
             else if (sig.Contains("Sleeper Cache"))
             {
                 tempString += sig.Substring(0, 3) + " [SC], ";
-                targets ++; solved ++;
-                }
-            else if (sig.Contains("Nebula")) {
+                targets++; solved++;
+            }
+            else if (sig.Contains("Nebula"))
+            {
                 //{tempString+= sig.Substring(0, 3) + " [nebu], ";
-                if (sig.Contains("Sister")) {tempString+= sig.Substring(0, 3) + " [LiM20], "; targets ++;}
-                else if (sig.Contains("Helix")) {tempString+= sig.Substring(0, 3) + " [LiM60], "; targets ++;}
-                else if (sig.Contains("Wild")) {tempString+= sig.Substring(0, 3) + " [MaM20], "; targets ++;}
-                else if (sig.Contains("Blackeye")) {tempString+= sig.Substring(0, 3) + " [MaM60], "; targets ++;}
-                else if (sig.Contains("Sunspark")) {tempString+= sig.Substring(0, 3) + " [AmM20], "; targets ++;}
-                else if (sig.Contains("Diablo")) {tempString+= sig.Substring(0, 3) + " [AmM60], "; targets ++;}
-                else if (sig.Contains("Smoking")) {tempString+= sig.Substring(0, 3) + " [GoM20], "; targets ++;}
-                else if (sig.Contains("Ring")) {tempString+= sig.Substring(0, 3) + " [GoM60], "; targets ++;}
-                else if (sig.Contains("Calabash")) {tempString+= sig.Substring(0, 3) + " [CeM20], "; targets ++;}
-                else if (sig.Contains("Glass")) {tempString+= sig.Substring(0, 3) + " [CeM60], "; targets ++;}
-                else if (sig.Contains("Bright")) {tempString+= sig.Substring(0, 3) + " [ViM20], "; targets ++;}
-                else if (sig.Contains("Sparking")) {tempString+= sig.Substring(0, 3) + " [ViM60], "; targets ++;}
-                else if (sig.Contains("Ghost")) {tempString+= sig.Substring(0, 3) + " [AzM20], "; targets ++;}
-                else if (sig.Contains("Eagle")) {tempString+= sig.Substring(0, 3) + " [AzM60], "; targets ++;}
-                else if (sig.Contains("Flame")) {tempString+= sig.Substring(0, 3) + " [VeM20], "; targets ++;}
-                else if (sig.Contains("Pipe")) {tempString+= sig.Substring(0, 3) + " [VeM60], "; targets ++;}
+                if (sig.Contains("Sister")) { tempString += sig.Substring(0, 3) + " [LiM20], "; targets++; }
+                else if (sig.Contains("Helix")) { tempString += sig.Substring(0, 3) + " [LiM60], "; targets++; }
+                else if (sig.Contains("Wild")) { tempString += sig.Substring(0, 3) + " [MaM20], "; targets++; }
+                else if (sig.Contains("Blackeye")) { tempString += sig.Substring(0, 3) + " [MaM60], "; targets++; }
+                else if (sig.Contains("Sunspark")) { tempString += sig.Substring(0, 3) + " [AmM20], "; targets++; }
+                else if (sig.Contains("Diablo")) { tempString += sig.Substring(0, 3) + " [AmM60], "; targets++; }
+                else if (sig.Contains("Smoking")) { tempString += sig.Substring(0, 3) + " [GoM20], "; targets++; }
+                else if (sig.Contains("Ring")) { tempString += sig.Substring(0, 3) + " [GoM60], "; targets++; }
+                else if (sig.Contains("Calabash")) { tempString += sig.Substring(0, 3) + " [CeM20], "; targets++; }
+                else if (sig.Contains("Glass")) { tempString += sig.Substring(0, 3) + " [CeM60], "; targets++; }
+                else if (sig.Contains("Bright")) { tempString += sig.Substring(0, 3) + " [ViM20], "; targets++; }
+                else if (sig.Contains("Sparking")) { tempString += sig.Substring(0, 3) + " [ViM60], "; targets++; }
+                else if (sig.Contains("Ghost")) { tempString += sig.Substring(0, 3) + " [AzM20], "; targets++; }
+                else if (sig.Contains("Eagle")) { tempString += sig.Substring(0, 3) + " [AzM60], "; targets++; }
+                else if (sig.Contains("Flame")) { tempString += sig.Substring(0, 3) + " [VeM20], "; targets++; }
+                else if (sig.Contains("Pipe")) { tempString += sig.Substring(0, 3) + " [VeM60], "; targets++; }
                 /*else if (sig.Contains("Emerald")) {tempString+= sig.Substring(0, 3) + " [LiC5], ";}
                 else if (sig.Contains("Crimson")) {tempString+= sig.Substring(0, 3) + " [MaC5], ";}
                 else if (sig.Contains("Bandit")) {tempString+= sig.Substring(0, 3) + " [AmC5], ";}
@@ -153,17 +152,17 @@ public class NodeFrame : MonoBehaviour
                 else if (sig.Contains("Forgotten")) {tempString+= sig.Substring(0, 3) + " [ViC5], ";}
                 else if (sig.Contains("Rapture")) {tempString+= sig.Substring(0, 3) + " [AzC5], ";}
                 else if (sig.Contains("Saintly")) {tempString+= sig.Substring(0, 3) + " [VeC5], ";}*/
-                solved ++;
-                }
-            else if (sig.Contains("Data Site")) solved ++;
-            else if (sig.Contains("Relic Site")) solved ++;
-            else if (sig.Contains("Wormhole")) solved ++;
-            else if (sig.Contains("Combat Site")) solved ++;
-            else if (sig.Contains("Gas Site")) solved ++;
+                solved++;
+            }
+            else if (sig.Contains("Data Site")) solved++;
+            else if (sig.Contains("Relic Site")) solved++;
+            else if (sig.Contains("Wormhole")) solved++;
+            else if (sig.Contains("Combat Site")) solved++;
+            else if (sig.Contains("Gas Site")) solved++;
             else
             {
                 tempString += sig.Substring(0, 3) + ", ";
-                unsolved ++;
+                unsolved++;
             }
         }
         var filtered = solved - targets;
