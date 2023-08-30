@@ -9,8 +9,6 @@ public class NodeFrameButton : MonoBehaviour, IPointerClickHandler
         switch (eventData.button)
         {
             case PointerEventData.InputButton.Left:
-                NodeFrameParent.GetComponent<NodeFrame>().UpdateSigs();
-                break;
             case PointerEventData.InputButton.Right:
                 NodeFrameParent.GetComponent<NodeFrame>().RemoveSigs();
                 break;
