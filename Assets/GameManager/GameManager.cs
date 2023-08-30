@@ -5,42 +5,47 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public TextAsset securityCSV;
     [SerializeField] public GameObject DebugReadout;
-    private TextMeshProUGUI debugText;
-    //private Dictionary<string, float> securityDictionary = new Dictionary<string, float>();
     [SerializeField] public string[] securityString;
     [SerializeField] public GameObject NodePrefab;
     [SerializeField] public Route WorkingRoute;
+
     static bool listeningForName = false;
+    public TextAsset securityCSV;
     public static string nameSoFar = "";
     public int RowCount = 0;
     public float RowSize = 0.25f;
-    private Vector3 mouseDragStartPoint = Vector3.zero;
-    private Vector3 cameraDragStartPoint = Vector3.zero;
-    private bool cameraDraggingNow = false;
-    private float cameraClampPadding = 0f;//0.05f;
+
+    private TextMeshProUGUI _debugText;
+    private Vector3 _mouseDragStartPoint = Vector3.zero;
+    private Vector3 _cameraDragStartPoint = Vector3.zero;
+    private bool _cameraDraggingNow = false;
+    private float _cameraClampPadding = 0f;
+
+    /// <summary>
+    /// Unity Start function
+    /// </summary>
     void Start()
     {
-        var csv = securityCSV.ToString();
+        string csv = securityCSV.ToString();
         securityString = csv.Split(',');
         Debug.Log("There are " + securityString.Length + " lines loaded into the security string array.");
 
-        var nodesManaged = 0;
-        var stringsManaged = 0;
+        int nodesManaged = 0;
+        int stringsManaged = 0;
         // Load a saved route or create a fresh one
         if (File.Exists(Serializer.SavePath))
         {
             WorkingRoute = Serializer.ReadData(WorkingRoute);
-            for (var i = 0; i < WorkingRoute.NodeList.Count; i++)
+            for (int i = 0; i < WorkingRoute.NodeList.Count; i++)
             {
-                var pos = new Vector2(0f, -i * RowSize);
-                var frame = Instantiate(NodePrefab, pos, Quaternion.identity);
-                frame.GetComponent<NodeFrame>().Name = WorkingRoute.NodeList[i].Name;
-                frame.GetComponent<NodeFrame>().Time = WorkingRoute.NodeList[i].Update;
+                Vector2 pos = new Vector2(0f, -i * RowSize);
+                GameObject frame = Instantiate(NodePrefab, pos, Quaternion.identity);
+                frame.GetComponent<NodeFrame>().NodeName = WorkingRoute.NodeList[i].Name;
+                frame.GetComponent<NodeFrame>().NodeTime = WorkingRoute.NodeList[i].Update;
 
-                var secStatus = FetchSystemSecurity(WorkingRoute.NodeList[i].Name);
-                var newCol = new Color();
+                float secStatus = FetchSystemSecurity(WorkingRoute.NodeList[i].Name);
+                Color newCol = new Color();
                 if (secStatus >= 0.75f)
                 {
                     newCol = Color.Lerp(Color.green, Color.cyan, (secStatus - 0.5f) / 0.5f);
@@ -53,7 +58,7 @@ public class GameManager : MonoBehaviour
                 {
                     newCol = Color.Lerp(Color.red, new Color(1.0f, 0.64f, 0.0f), secStatus / 0.5f);
                 }
-                frame.GetComponent<NodeFrame>().NameTextComponent.color = newCol;
+                frame.GetComponent<NodeFrame>().TmpNameComponent.color = newCol;
 
                 RowCount++;
                 nodesManaged++;
@@ -64,27 +69,33 @@ public class GameManager : MonoBehaviour
         }
         else WorkingRoute = new Route();
 
-        debugText = DebugReadout.GetComponent<TextMeshProUGUI>();
-        debugText.text = "Managing " + nodesManaged + " systems";
-        debugText.text += " and " + stringsManaged + " signatures.";
+        _debugText = DebugReadout.GetComponent<TextMeshProUGUI>();
+        _debugText.text = "Managing " + nodesManaged + " systems";
+        _debugText.text += " and " + stringsManaged + " signatures.";
     }
+
+    /// <summary>
+    /// Main loop, handles input and camera movement
+    /// </summary>
     void Update()
     {
-        // Main loop
         InputHandler();
-        if (cameraDraggingNow) DragCamera();
+        if (_cameraDraggingNow) DragCamera();
         if (listeningForName) RecordKeystrokes();
         else if ((Input.GetKeyDown(KeyCode.Return)) && (nameSoFar != "")) FinishRecordingKeyStrokes();
     }
+
+    /// <summary>
+    /// Interprets input from the user
+    /// </summary>
     void InputHandler()
     {
         if (Input.GetKeyDown(KeyCode.F1))
         {
-            //ManageDisk("wipe");
-            //ManageDisk("restart");
             Serializer.ClearData(WorkingRoute);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
+
         if (Input.GetKeyDown(KeyCode.Delete)) ManageNode("backspace");
         if (Input.GetKeyDown(KeyCode.Return)) ManageNode("record");
         if (Input.GetKeyDown(KeyCode.F12)) ImportRouteAlgorithm();
@@ -93,7 +104,11 @@ public class GameManager : MonoBehaviour
         if (Input.GetMouseButtonDown(2)) BeginCameraDrag();
         if (Input.GetMouseButtonUp(2)) FinishCameraDrag();
     }
-    /* NODE MANAGEMENT */
+
+    /// <summary>
+    /// Node management
+    /// </summary>
+    /// <param name="mode"></param>
     void ManageNode(string mode)
     {
         switch (mode)
@@ -110,11 +125,17 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+
+    /// <summary>
+    /// Gets the security status of a system
+    /// </summary>
+    /// <param name="systemName"></param>
+    /// <returns></returns>
     float FetchSystemSecurity(string systemName)
     {
-        var fetchedSecurity = 1f;
+        float fetchedSecurity = 1f;
         Debug.Log("Searching for security status for system name: " + systemName);
-        for (var i = 0; i < securityString.Length; i++)
+        for (int i = 0; i < securityString.Length; i++)
         {
             if (securityString[i] == systemName)
             {
@@ -126,18 +147,22 @@ public class GameManager : MonoBehaviour
         // Round to nearest tenth
         fetchedSecurity = Mathf.Round(fetchedSecurity * 10.0f) * 0.1f;
         Debug.Log("Security for " + systemName + ": " + fetchedSecurity);
-        return (fetchedSecurity);
+        return fetchedSecurity;
     }
+
+    /// <summary>
+    /// Algorithm for the imported route
+    /// </summary>
     void ImportRouteAlgorithm()
     {
         // Validate there is a route in the clipBoard
-        var clipBoard = GUIUtility.systemCopyBuffer;
+        string clipBoard = GUIUtility.systemCopyBuffer;
         if (clipBoard.Substring(0, 18) != "Current location: ") return;
         WorkingRoute.NodeList.Clear();
 
         // Trim "Current location: " from clipboard
-        var terminationTrim = 0;
-        for (var i = 0; i < clipBoard.Length; i++)
+        int terminationTrim = 0;
+        for (int i = 0; i < clipBoard.Length; i++)
         {
             if (clipBoard[i] == '1')
             {
@@ -148,12 +173,12 @@ public class GameManager : MonoBehaviour
         clipBoard = clipBoard.Substring(terminationTrim);
 
         // Parse each solar system into a working list
-        var parsedList = clipBoard.Split('\n');
-        var terminationCharacterLength = 0;
-        for (var i = 0; i < parsedList.Length; i++)
+        string[] parsedList = clipBoard.Split('\n');
+        int terminationCharacterLength = 0;
+        for (int i = 0; i < parsedList.Length; i++)
         {
             // Search string for subsequent parenthesis
-            for (var j = 0; j < parsedList[i].Length; j++)
+            for (int j = 0; j < parsedList[i].Length; j++)
             {
                 if (parsedList[i][j] == '(')
                 {
@@ -166,7 +191,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Create new nodes and add them to working route
-        for (var i = 0; i < parsedList.Length; i++)
+        for (int i = 0; i < parsedList.Length; i++)
         {
             Node newNode = new Node(parsedList[i]);
             WorkingRoute.NodeList.Add(newNode);
@@ -175,12 +200,20 @@ public class GameManager : MonoBehaviour
         Serializer.SaveData(WorkingRoute);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
+    /// <summary>
+    /// Records keystrokes, used for naming systems
+    /// </summary>
     void RecordKeystrokes()
     {
         if (Input.GetKeyDown(KeyCode.Escape)) nameSoFar = "";
         else if ((nameSoFar != "") && (Input.GetKeyDown(KeyCode.Backspace))) nameSoFar = nameSoFar.Substring(0, nameSoFar.Length - 1);
         else nameSoFar += Input.inputString;
     }
+
+    /// <summary>
+    /// Finishes recording keystrokes, used for naming systems
+    /// </summary>
     void FinishRecordingKeyStrokes()
     {
         nameSoFar = nameSoFar.Trim();
@@ -191,7 +224,11 @@ public class GameManager : MonoBehaviour
         Serializer.SaveData(WorkingRoute);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-    /* CAMERA MANAGEMENT */
+
+    /// <summary>
+    /// Scrolls the camera up or down
+    /// </summary>
+    /// <param name="dir"></param>
     void ScrollCamera(Vector3 dir)
     {
         Camera.main.transform.position += dir * RowSize;
@@ -199,21 +236,33 @@ public class GameManager : MonoBehaviour
         Serializer.SaveData(WorkingRoute);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
+    /// <summary>
+    /// Allows the camera to be dragged
+    /// </summary>
     void BeginCameraDrag()
     {
-        cameraDraggingNow = true;
-        mouseDragStartPoint = Input.mousePosition;
-        cameraDragStartPoint = Camera.main.transform.position;
+        _cameraDraggingNow = true;
+        _mouseDragStartPoint = Input.mousePosition;
+        _cameraDragStartPoint = Camera.main.transform.position;
     }
+
+    /// <summary>
+    /// Drags the camera
+    /// </summary>
     void DragCamera()
     {
-        var newLoc = new Vector3(0f, (mouseDragStartPoint.y - Input.mousePosition.y) / 100, 0f);
-        Camera.main.transform.position = cameraDragStartPoint + newLoc;
+        Vector3 newLoc = new Vector3(0f, (_mouseDragStartPoint.y - Input.mousePosition.y) / 100, 0f);
+        Camera.main.transform.position = _cameraDragStartPoint + newLoc;
     }
+
+    /// <summary>
+    /// Finishes dragging the camera
+    /// </summary>
     void FinishCameraDrag()
     {
-        cameraDraggingNow = false;
-        var yOffset = Camera.main.transform.position.y % RowSize;
+        _cameraDraggingNow = false;
+        float yOffset = Camera.main.transform.position.y % RowSize;
         if (yOffset != 0)
         {
             Camera.main.transform.position -= new Vector3(0f, yOffset, 0f);
@@ -222,16 +271,20 @@ public class GameManager : MonoBehaviour
         Serializer.SaveData(WorkingRoute);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
+    /// <summary>
+    /// Keeps the camera from going out of bounds
+    /// </summary>
     public void ClampCamera()
     {
-        var camPos = Camera.main.transform.position;
-        if (camPos.y > -2 * RowSize + cameraClampPadding)
+        Vector3 camPos = Camera.main.transform.position;
+        if (camPos.y > -2 * RowSize + _cameraClampPadding)
         {
-            camPos = new Vector3(camPos.x, -2 * RowSize + cameraClampPadding, camPos.z);
+            camPos = new Vector3(camPos.x, -2 * RowSize + _cameraClampPadding, camPos.z);
         }
         else if (camPos.y < -((RowCount - 3) * RowSize))
         {
-            camPos = new Vector3(camPos.x, -((RowCount - 3) * RowSize) - cameraClampPadding, camPos.z);
+            camPos = new Vector3(camPos.x, -((RowCount - 3) * RowSize) - _cameraClampPadding, camPos.z);
         }
         Camera.main.transform.position = camPos;
         WorkingRoute.CameraY = camPos.y;
