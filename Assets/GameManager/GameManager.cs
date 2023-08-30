@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
     {
         string csv = securityCSV.ToString();
         securityString = csv.Split(',');
-        Debug.Log("There are " + securityString.Length + " lines loaded into the security string array.");
+        Debug.Log($"There are {securityString.Length} lines loaded into the security string array.");
 
         int nodesManaged = 0;
         int stringsManaged = 0;
@@ -64,14 +64,13 @@ public class GameManager : MonoBehaviour
                 nodesManaged++;
                 stringsManaged += WorkingRoute.NodeList[i].SigList.Count;
             }
-            Debug.Log("loading camera x: " + WorkingRoute.CameraY);
+            Debug.Log($"loading camera x: {WorkingRoute.CameraY}");
             Camera.main.transform.position += new Vector3(0f, WorkingRoute.CameraY);
         }
         else WorkingRoute = new Route();
 
         _debugText = DebugReadout.GetComponent<TextMeshProUGUI>();
-        _debugText.text = "Managing " + nodesManaged + " systems";
-        _debugText.text += " and " + stringsManaged + " signatures.";
+        _debugText.text = $"Managing {nodesManaged} systems and {stringsManaged} signatures.";
     }
 
     /// <summary>
@@ -134,19 +133,19 @@ public class GameManager : MonoBehaviour
     float FetchSystemSecurity(string systemName)
     {
         float fetchedSecurity = 1f;
-        Debug.Log("Searching for security status for system name: " + systemName);
+        Debug.Log($"Searching for security status for system name: {systemName}");
         for (int i = 0; i < securityString.Length; i++)
         {
             if (securityString[i] == systemName)
             {
-                Debug.Log("Found name match: " + systemName + " + " + securityString[i] + " (security: " + securityString[i + 1] + ")");
+                Debug.Log($"Found name match: {systemName} + {securityString[i]} (security: {securityString[i + 1]})");
                 fetchedSecurity = float.Parse(securityString[i + 1]);
                 break;
             }
         }
         // Round to nearest tenth
         fetchedSecurity = Mathf.Round(fetchedSecurity * 10.0f) * 0.1f;
-        Debug.Log("Security for " + systemName + ": " + fetchedSecurity);
+        Debug.Log($"Security for {systemName}: {fetchedSecurity}");
         return fetchedSecurity;
     }
 
