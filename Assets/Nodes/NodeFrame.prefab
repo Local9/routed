@@ -535,10 +535,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60854bc4f3a4f524ab3f1dbc0755ff56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NameTextComponent: {fileID: 6845173309160823656}
-  TimerTextComponent: {fileID: 6914089933743200383}
-  ScanTextComponent: {fileID: 5952709253120824413}
-  Name: 
+  TmpNameComponent: {fileID: 6845173309160823656}
+  TmpTimerComponent: {fileID: 6914089933743200383}
+  TmpScanComponent: {fileID: 5952709253120824413}
+  NodeName: 
 --- !u!223 &1741488273795212894
 Canvas:
   m_ObjectHideFlags: 0

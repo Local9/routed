@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using TMPro;
 using UnityEngine;
@@ -10,7 +11,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] public GameObject NodePrefab;
     [SerializeField] public Route WorkingRoute;
 
-    static bool listeningForName = false;
+    private bool _listeningForName = false;
     public TextAsset securityCSV;
     public static string nameSoFar = "";
     public int RowCount = 0;
@@ -58,6 +59,7 @@ public class GameManager : MonoBehaviour
                 {
                     newCol = Color.Lerp(Color.red, new Color(1.0f, 0.64f, 0.0f), secStatus / 0.5f);
                 }
+
                 frame.GetComponent<NodeFrame>().TmpNameComponent.color = newCol;
 
                 RowCount++;
@@ -80,7 +82,7 @@ public class GameManager : MonoBehaviour
     {
         InputHandler();
         if (_cameraDraggingNow) DragCamera();
-        if (listeningForName) RecordKeystrokes();
+        if (_listeningForName) RecordKeystrokes();
         else if ((Input.GetKeyDown(KeyCode.Return)) && (nameSoFar != "")) FinishRecordingKeyStrokes();
     }
 
@@ -95,8 +97,8 @@ public class GameManager : MonoBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
-        if (Input.GetKeyDown(KeyCode.Delete)) ManageNode("backspace");
-        if (Input.GetKeyDown(KeyCode.Return)) ManageNode("record");
+        if (Input.GetKeyDown(KeyCode.Delete)) ManageNode(KeyCode.Delete);
+        if (Input.GetKeyDown(KeyCode.Return)) ManageNode(KeyCode.Return);
         if (Input.GetKeyDown(KeyCode.F12)) ImportRouteAlgorithm();
         if (Input.GetAxis("Mouse ScrollWheel") > 0f) ScrollCamera(Vector3.up);
         if (Input.GetAxis("Mouse ScrollWheel") < 0f) ScrollCamera(Vector3.down);
@@ -108,19 +110,18 @@ public class GameManager : MonoBehaviour
     /// Node management
     /// </summary>
     /// <param name="mode"></param>
-    void ManageNode(string mode)
+    void ManageNode(KeyCode mode)
     {
         switch (mode)
         {
-            case "backspace":
+            case KeyCode.Delete:
                 if (WorkingRoute.NodeList.Count < 1) break;
                 WorkingRoute.NodeList.Remove(WorkingRoute.NodeList[WorkingRoute.NodeList.Count - 1]);
-                Serializer.SaveData(WorkingRoute);
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                SaveData();
                 break;
-            case "record":
+            case KeyCode.Return:
                 Debug.Log("Listening for keystrokes");
-                listeningForName = !listeningForName;
+                _listeningForName = !_listeningForName;
                 break;
         }
     }
@@ -154,50 +155,41 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void ImportRouteAlgorithm()
     {
-        // Validate there is a route in the clipBoard
-        string clipBoard = GUIUtility.systemCopyBuffer;
-        if (clipBoard.Substring(0, 18) != "Current location: ") return;
-        WorkingRoute.NodeList.Clear();
-
-        // Trim "Current location: " from clipboard
-        int terminationTrim = 0;
-        for (int i = 0; i < clipBoard.Length; i++)
+        try
         {
-            if (clipBoard[i] == '1')
-            {
-                terminationTrim = i;
-                break;
-            }
-        }
-        clipBoard = clipBoard.Substring(terminationTrim);
+            string clipBoard = GUIUtility.systemCopyBuffer;
+            if (clipBoard.Substring(0, 18) != "Current location: ") return;
+            WorkingRoute.NodeList.Clear();
 
-        // Parse each solar system into a working list
-        string[] parsedList = clipBoard.Split('\n');
-        int terminationCharacterLength = 0;
-        for (int i = 0; i < parsedList.Length; i++)
-        {
-            // Search string for subsequent parenthesis
-            for (int j = 0; j < parsedList[i].Length; j++)
+            // Trim "Current location: " from clipboard
+            int terminationTrim = 0;
+            for (int i = 0; i < clipBoard.Length; i++)
             {
-                if (parsedList[i][j] == '(')
+                if (clipBoard[i] == '1')
                 {
-                    terminationCharacterLength = j - 3;
+                    terminationTrim = i;
                     break;
                 }
             }
-            // Cut string to that parenthesis
-            parsedList[i] = parsedList[i].Substring(3, terminationCharacterLength).Trim();
-        }
+            clipBoard = clipBoard.Substring(terminationTrim);
 
-        // Create new nodes and add them to working route
-        for (int i = 0; i < parsedList.Length; i++)
+            // Parse each solar system into a working list
+            string[] parsedList = clipBoard.Split('\n');
+            for (int i = 0; i < parsedList.Length; i++)
+            {
+                string nodeName = GetSystemNameFromString(parsedList[i]);
+                Debug.Log($"Parsed system name: {nodeName}");
+                Node newNode = new Node(nodeName);
+                WorkingRoute.NodeList.Add(newNode);
+            }
+
+            SaveData();
+        }
+        catch (Exception e)
         {
-            Node newNode = new Node(parsedList[i]);
-            WorkingRoute.NodeList.Add(newNode);
+            Debug.LogError($"Error importing route: {e}");
+            Debug.LogError(e.StackTrace);
         }
-
-        Serializer.SaveData(WorkingRoute);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     /// <summary>
@@ -216,22 +208,29 @@ public class GameManager : MonoBehaviour
     void FinishRecordingKeyStrokes()
     {
         nameSoFar = nameSoFar.Trim();
-        //Debug.Log("Adding new system: " + nameSoFar);
-        Node newNode = new Node(nameSoFar);
-        nameSoFar = "";
-        WorkingRoute.NodeList.Add(newNode);
-        Serializer.SaveData(WorkingRoute);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        Debug.Log($"Adding new system: {nameSoFar}");
+        Node node = new Node(nameSoFar);
+        WorkingRoute.NodeList.Add(node);
+        SaveData();
+        nameSoFar = string.Empty;
     }
 
     /// <summary>
     /// Scrolls the camera up or down
     /// </summary>
-    /// <param name="dir"></param>
-    void ScrollCamera(Vector3 dir)
+    /// <param name="direction"></param>
+    void ScrollCamera(Vector3 direction)
     {
-        Camera.main.transform.position += dir * RowSize;
+        Camera.main.transform.Translate(direction * RowSize);
         ClampCamera();
+        SaveData();
+    }
+
+    /// <summary>
+    /// Save the data and reload the scene
+    /// </summary>
+    private void SaveData()
+    {
         Serializer.SaveData(WorkingRoute);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
@@ -267,8 +266,7 @@ public class GameManager : MonoBehaviour
             Camera.main.transform.position -= new Vector3(0f, yOffset, 0f);
         }
         ClampCamera();
-        Serializer.SaveData(WorkingRoute);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SaveData();
     }
 
     /// <summary>
@@ -287,5 +285,12 @@ public class GameManager : MonoBehaviour
         }
         Camera.main.transform.position = camPos;
         WorkingRoute.CameraY = camPos.y;
+    }
+
+    string GetSystemNameFromString(string system)
+    {
+        string[] words = system.Split(' ', '/');
+        string desiredWord = words[1];
+        return desiredWord.Replace("(Solar System)", "").Replace("(Solar", "").Trim();
     }
 }

@@ -11,11 +11,11 @@ public class NodeFrame : MonoBehaviour
     [SerializeField] public TextMeshPro TmpScanComponent;
     [SerializeField] public string NodeName;
     [SerializeField] public DateTime NodeTime;
-    private GameManager gameManager;
+    private GameManager _gameManager;
 
     void Start()
     {
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        _gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         UpdateUIText(NodeName);
     }
 
@@ -25,6 +25,9 @@ public class NodeFrame : MonoBehaviour
     void Update()
     {
         int minutesSinceScan = Convert.ToInt32(Math.Round((DateTime.Now - NodeTime).TotalMinutes));
+
+        if (TmpTimerComponent is null) return;
+
         if (minutesSinceScan < 60) TmpTimerComponent.text = Mathf.Round(minutesSinceScan) + "m";
         else if (minutesSinceScan < 1440) TmpTimerComponent.text = Mathf.Round(minutesSinceScan / 60) + "h";
         else TmpTimerComponent.text = Mathf.Round(minutesSinceScan / 1440) + "d";
@@ -35,13 +38,13 @@ public class NodeFrame : MonoBehaviour
     /// </summary>
     public void RemoveSigs()
     {
-        foreach (Node node in gameManager.WorkingRoute.NodeList)
+        foreach (Node node in _gameManager.WorkingRoute.NodeList)
         {
             if (node.Name == NodeName)
             {
                 node.SigList.Clear();
                 node.Update = DateTime.Now;
-                Serializer.SaveData(gameManager.WorkingRoute);
+                Serializer.SaveData(_gameManager.WorkingRoute);
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
                 return;
             }
@@ -86,12 +89,12 @@ public class NodeFrame : MonoBehaviour
                 node.SigList = NewStrings;
                 node.Update = DateTime.Now;
 
-                gameManager.WorkingRoute.CameraY = transform.position.y;
+                _gameManager.WorkingRoute.CameraY = transform.position.y;
                 Vector3 camPos = Camera.main.transform.position;
                 Camera.main.transform.position = new Vector3(camPos.x, transform.position.y, camPos.z);
-                gameManager.ClampCamera();
+                _gameManager.ClampCamera();
 
-                Serializer.SaveData(gameManager.WorkingRoute);
+                Serializer.SaveData(_gameManager.WorkingRoute);
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
                 return;
             }
